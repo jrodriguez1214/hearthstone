@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Hearthstone (static)",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-c", "import os; os.chdir('/tmp/hearthstone'); from http.server import HTTPServer, SimpleHTTPRequestHandler; HTTPServer(('', 3000), SimpleHTTPRequestHandler).serve_forever()"],
+      "port": 3000
+    }
+  ]
+}
