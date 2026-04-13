@@ -479,6 +479,8 @@ textarea { resize: vertical; min-height: 68px; }
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   animation: panelFadeIn 0.2s ease;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 @keyframes panelFadeIn {
   from { opacity: 0; }
@@ -928,6 +930,9 @@ textarea { resize: vertical; min-height: 68px; }
   -webkit-backdrop-filter: blur(8px);
   z-index: 200;
   animation: panelFadeIn 0.2s ease;
+  touch-action: none;
+  -webkit-overflow-scrolling: auto;
+  overscroll-behavior: none;
 }
 
 .hub-panel {
@@ -952,15 +957,15 @@ textarea { resize: vertical; min-height: 68px; }
   transform: translateY(0);
 }
 
-/* Drag handle */
+/* Drag handle — larger touch target */
 .hub-panel::before {
   content: '';
   display: block;
   width: 36px;
-  height: 4px;
+  height: 5px;
   background: var(--border);
-  border-radius: 2px;
-  margin: 10px auto 0;
+  border-radius: 3px;
+  margin: 10px auto 2px;
   flex-shrink: 0;
 }
 
@@ -971,6 +976,9 @@ textarea { resize: vertical; min-height: 68px; }
   padding: 14px 20px 12px;
   border-bottom: 1px solid var(--border-light);
   flex-shrink: 0;
+  touch-action: none; /* prevent browser swipe gestures on header */
+  user-select: none;
+  -webkit-user-select: none;
 }
 .hub-panel-title {
   font-size: 17px;
@@ -1008,6 +1016,7 @@ textarea { resize: vertical; min-height: 68px; }
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  overscroll-behavior: none;
 }
 
 /* Expanded state — full height */

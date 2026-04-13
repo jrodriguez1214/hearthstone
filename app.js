@@ -445,98 +445,157 @@ Pages.dashboard = {
     }
   },
 
-  // Touch drag on the handle/header to expand/collapse/dismiss
+  // Touch drag — expand / collapse / dismiss
   _initDrag(panel) {
     const self = this
-    let startY = 0
-    let lastY = 0
-    let dragging = false
-    let panelStartH = 0
-
-    // The drag handle zone = the ::before pseudo + header (first ~70px)
     const headEl = panel.querySelector('.hub-panel-head')
+    const bodyEl = panel.querySelector('.hub-panel-body')
 
-    function getTouch(e) {
-      return e.touches ? e.touches[0] : e
+    let startY = 0, lastY = 0, prevY = 0, velocity = 0
+    let dragging = false
+    let startTime = 0
+
+    // Prevent page scroll/bounce while panel is open
+    const backdrop = panel.previousElementSibling // .hub-panel-backdrop
+    if (backdrop) {
+      backdrop.addEventListener('touchmove', e => e.preventDefault(), { passive: false })
     }
 
-    function onTouchStart(e) {
-      const t = getTouch(e)
+    // Prevent body scroll while panel is visible
+    panel.addEventListener('touchmove', function(e) {
+      if (dragging) {
+        e.preventDefault()
+        return
+      }
+      // If body is scrolled to top and swiping down, start drag instead of scroll
+      if (bodyEl && bodyEl.scrollTop <= 0) {
+        const t = e.touches[0]
+        if (t.clientY > startY + 5) {
+          e.preventDefault()
+        }
+      }
+    }, { passive: false })
+
+    function startDrag(e) {
+      const t = e.touches[0]
       startY = t.clientY
       lastY = startY
+      prevY = startY
+      velocity = 0
+      startTime = Date.now()
       dragging = true
-      panelStartH = panel.getBoundingClientRect().height
       panel.style.transition = 'none'
     }
 
-    function onTouchMove(e) {
+    function moveDrag(e) {
       if (!dragging) return
-      const t = getTouch(e)
+      e.preventDefault()
+      const t = e.touches[0]
+      prevY = lastY
       lastY = t.clientY
       const dy = lastY - startY
 
-      // Translate the panel — positive = moving down, negative = moving up
+      // Track velocity (px per ms)
+      const now = Date.now()
+      const dt = now - startTime
+      if (dt > 0) velocity = (lastY - prevY) / Math.max(dt / 60, 1)
+
       if (self._expanded) {
-        // From expanded: only allow pulling down
+        // Expanded: only allow pulling down, with rubber-band resistance for up
         if (dy > 0) {
           panel.style.transform = `translateY(${dy}px)`
+        } else {
+          // Rubber band upward
+          panel.style.transform = `translateY(${dy * 0.15}px)`
         }
       } else {
-        // From peek: allow pulling up (negative dy) or down (positive dy)
-        // Clamp upward pull so panel doesn't go above viewport
-        const clampedDy = Math.max(dy, -(window.innerHeight - panelStartH))
-        panel.style.transform = `translateY(${clampedDy}px)`
+        // Peek: allow up (expand) and down (dismiss)
+        if (dy < 0) {
+          // Pulling up — rubber band after a point
+          const maxUp = window.innerHeight * 0.25
+          const clamped = Math.max(dy, -maxUp)
+          const rubber = clamped < -50 ? -50 + (clamped + 50) * 0.3 : clamped
+          panel.style.transform = `translateY(${rubber}px)`
+        } else {
+          panel.style.transform = `translateY(${dy}px)`
+        }
       }
     }
 
-    function onTouchEnd() {
+    function endDrag() {
       if (!dragging) return
       dragging = false
       const dy = lastY - startY
+      const fast = Math.abs(velocity) > 2 // fast flick threshold
 
-      // Reset inline styles — let CSS classes handle the position
-      panel.style.transition = ''
+      // Smooth snap-back transition
+      panel.style.transition = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)'
       panel.style.transform = ''
 
+      // Clear inline transition after animation
+      setTimeout(() => {
+        if (panel) {
+          panel.style.transition = ''
+          panel.style.transform = ''
+        }
+      }, 320)
+
       if (self._expanded) {
-        if (dy > 150) {
-          self._close()
-        } else if (dy > 60) {
-          self._collapse()
+        // From expanded
+        if ((dy > 80 && velocity > 0) || (fast && velocity > 0 && dy > 30)) {
+          if (dy > 200 || (fast && velocity > 4)) {
+            self._close()
+          } else {
+            self._collapse()
+          }
         }
-        // else snap back to expanded (CSS handles it)
       } else {
-        if (dy < -50) {
+        // From peek
+        if ((dy < -40 && velocity <= 0) || (fast && velocity < 0)) {
           self._expand()
-        } else if (dy > 60) {
+        } else if ((dy > 50 && velocity >= 0) || (fast && velocity > 0 && dy > 20)) {
           self._close()
         }
-        // else snap back to peek (CSS handles it)
       }
     }
 
-    // Bind to the header area only (not the scrollable body)
+    // Header area — always draggable
     if (headEl) {
-      headEl.addEventListener('touchstart', onTouchStart, { passive: true })
-      headEl.addEventListener('touchmove', onTouchMove, { passive: false })
-      headEl.addEventListener('touchend', onTouchEnd, { passive: true })
+      headEl.style.touchAction = 'none' // disable browser gestures on header
+      headEl.addEventListener('touchstart', startDrag, { passive: true })
+      headEl.addEventListener('touchmove', moveDrag, { passive: false })
+      headEl.addEventListener('touchend', endDrag, { passive: true })
     }
-    // Also bind to the drag handle (the ::before pseudo — use the panel top area)
-    panel.addEventListener('touchstart', function(e) {
-      const t = getTouch(e)
-      const rect = panel.getBoundingClientRect()
-      // Only activate if touching the top 20px (the handle bar area)
-      if (t.clientY - rect.top <= 20) {
-        onTouchStart(e)
-      }
-    }, { passive: true })
-    panel.addEventListener('touchmove', function(e) {
-      if (dragging) {
-        e.preventDefault() // prevent scroll while dragging
-        onTouchMove(e)
-      }
-    }, { passive: false })
-    panel.addEventListener('touchend', onTouchEnd, { passive: true })
+
+    // Body — start drag only when scrolled to top and pulling down
+    if (bodyEl) {
+      bodyEl.addEventListener('touchstart', function(e) {
+        const t = e.touches[0]
+        startY = t.clientY
+        lastY = startY
+        prevY = startY
+        startTime = Date.now()
+      }, { passive: true })
+
+      bodyEl.addEventListener('touchmove', function(e) {
+        if (dragging) {
+          moveDrag(e)
+          return
+        }
+        const t = e.touches[0]
+        const dy = t.clientY - startY
+        // If at top of scroll and pulling down → hijack into drag
+        if (bodyEl.scrollTop <= 0 && dy > 8) {
+          dragging = true
+          panel.style.transition = 'none'
+          moveDrag(e)
+        }
+      }, { passive: false })
+
+      bodyEl.addEventListener('touchend', function() {
+        if (dragging) endDrag()
+      }, { passive: true })
+    }
   },
 
   render() {
