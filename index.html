@@ -24,24 +24,14 @@
       <button class="top-bar-back hidden" id="back-btn" onclick="Router.go('dashboard')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <div class="top-bar-brand" onclick="Router.go('dashboard')" style="cursor:pointer">
-        <div class="logo-mark">
-          <svg width="18" height="18" viewBox="0 0 512 512">
-            <rect x="108" y="230" width="296" height="210" rx="12" fill="none" stroke="white" stroke-width="36" stroke-linejoin="round"/>
-            <polyline points="76,248 256,108 436,248" fill="none" stroke="white" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M256,358 C256,358 188,306 188,274 C188,254 204,240 224,240 C238,240 250,248 256,258 C262,248 274,240 288,240 C308,240 324,254 324,274 C324,306 256,358 256,358Z" fill="rgba(255,255,255,0.7)"/>
-          </svg>
-        </div>
-        <span class="top-bar-title" id="top-bar-title">Hearthstone</span>
-      </div>
-    </div>
-    <div class="top-bar-right">
       <button class="top-bar-btn" onclick="Search.open()" aria-label="Search">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
       </button>
-      <kbd class="top-bar-kbd" onclick="Search.open()">⌘K</kbd>
+    </div>
+    <div class="top-bar-right">
+      <span class="top-bar-title" id="top-bar-title">Hearthstone</span>
     </div>
   </header>
 
@@ -53,6 +43,62 @@
 
 <!-- Hub panel overlay (outside scroll container for mobile Safari) -->
 <div id="hub-panel-root"></div>
+
+<!-- Floating app icon — bottom right -->
+<button class="fab-about" onclick="AboutOverlay.open()" aria-label="About Hearthstone">
+  <svg width="22" height="22" viewBox="0 0 512 512">
+    <rect x="108" y="230" width="296" height="210" rx="12" fill="none" stroke="white" stroke-width="36" stroke-linejoin="round"/>
+    <polyline points="76,248 256,108 436,248" fill="none" stroke="white" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M256,358 C256,358 188,306 188,274 C188,254 204,240 224,240 C238,240 250,248 256,258 C262,248 274,240 288,240 C308,240 324,254 324,274 C324,306 256,358 256,358Z" fill="rgba(255,255,255,0.7)"/>
+  </svg>
+</button>
+
+<!-- About overlay -->
+<div id="about-overlay" class="about-overlay hidden">
+  <div class="about-backdrop" onclick="AboutOverlay.close()"></div>
+  <div class="about-card">
+    <button class="about-close" onclick="AboutOverlay.close()">&#x2715;</button>
+    <div class="about-icon">
+      <svg width="64" height="64" viewBox="0 0 512 512">
+        <rect width="512" height="512" rx="96" fill="#FAF5F0"/>
+        <rect x="108" y="230" width="296" height="210" rx="12" fill="none" stroke="#8B5E3C" stroke-width="32" stroke-linejoin="round"/>
+        <polyline points="76,248 256,108 436,248" fill="none" stroke="#8B5E3C" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M256,370 C256,370 176,310 176,272 C176,248 196,232 220,232 C236,232 250,242 256,254 C262,242 276,232 292,232 C316,232 336,248 336,272 C336,310 256,370 256,370Z" fill="#D4845A"/>
+        <path d="M256,348 C256,348 200,304 200,278 C200,262 212,252 228,252 C240,252 250,258 256,268 C262,258 272,252 284,252 C300,252 312,262 312,278 C312,304 256,348 256,348Z" fill="#F2C894"/>
+      </svg>
+    </div>
+    <h2 class="about-title">Hearthstone</h2>
+    <p class="about-version">Property Manager · v1.0</p>
+    <p class="about-desc">A simple, elegant property management app for landlords and property owners. Track your properties, tenants, rent payments, repairs, expenses, and outstanding items — all synced in real-time across your devices.</p>
+    <div class="about-features">
+      <div class="about-feature">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+        <span>Manage properties &amp; tenants</span>
+      </div>
+      <div class="about-feature">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Track rent payments &amp; expenses</span>
+      </div>
+      <div class="about-feature">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span>Log repairs &amp; outstanding items</span>
+      </div>
+      <div class="about-feature">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Calendar with recurring events</span>
+      </div>
+      <div class="about-feature">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <span>Real-time sync across devices</span>
+      </div>
+      <div class="about-feature">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Global search across all data</span>
+      </div>
+    </div>
+    <p class="about-credit">Created by <strong>Joshua Rodriguez</strong></p>
+  </div>
+</div>
 
 <!-- Global Search Overlay -->
 <div id="search-overlay" class="search-overlay hidden">

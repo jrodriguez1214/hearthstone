@@ -277,6 +277,19 @@ async function seed() {
   localStorage.setItem('hs_seeded_sb', '1')
 }
 
+// --- About Overlay ---
+
+const AboutOverlay = {
+  open() {
+    $('about-overlay').classList.remove('hidden')
+    document.body.style.overflow = 'hidden'
+  },
+  close() {
+    $('about-overlay').classList.add('hidden')
+    document.body.style.overflow = ''
+  }
+}
+
 // --- Panel (slide-in drawer — replaces Modal) ---
 
 const Panel = {
