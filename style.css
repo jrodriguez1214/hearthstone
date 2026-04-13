@@ -849,6 +849,17 @@ textarea { resize: vertical; min-height: 68px; }
    DASHBOARD HUB — Icon list + slide-in panel
    ============================================================ */
 
+.hub-brand {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 200;
+  font-size: 38px;
+  color: var(--text);
+  letter-spacing: 3px;
+  margin: 0 0 28px 4px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 .hub-layout {
   max-width: 420px;
 }

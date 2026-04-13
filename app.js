@@ -747,6 +747,7 @@ Pages.dashboard = {
 
     $('page-root').innerHTML = `
       <div class="hub-layout">
+        <h1 class="hub-brand">Hearthstone</h1>
         <div class="hub-list">
           ${tilesHTML}
         </div>
