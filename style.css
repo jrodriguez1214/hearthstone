@@ -135,10 +135,12 @@ body {
   flex-shrink: 0;
 }
 .top-bar-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 19px;
+  font-weight: 200;
   color: var(--text);
-  letter-spacing: -0.3px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
 }
 .top-bar-right {
   display: flex;
@@ -849,17 +851,6 @@ textarea { resize: vertical; min-height: 68px; }
    DASHBOARD HUB — Icon list + slide-in panel
    ============================================================ */
 
-.hub-brand {
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  font-weight: 200;
-  font-size: 38px;
-  color: var(--text);
-  letter-spacing: 3px;
-  margin: 0 0 28px 4px;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
 .hub-layout {
   max-width: 420px;
 }
@@ -1343,7 +1334,7 @@ textarea { resize: vertical; min-height: 68px; }
 
   /* Top bar — compact */
   .top-bar { height: 48px; padding: 0 14px; }
-  .top-bar-title { font-size: 14px; }
+  .top-bar-title { font-size: 17px; }
   .top-bar-kbd { display: none; }
   .logo-mark { width: 24px; height: 24px; }
   .logo-mark svg { width: 12px; height: 12px; }
