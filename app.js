@@ -331,6 +331,10 @@ const Router = {
     // Close any open panel
     if (!$('panel-overlay').classList.contains('hidden')) Panel.close()
 
+    // Clear hub panel when leaving dashboard
+    const hpr = $('hub-panel-root')
+    if (hpr) hpr.innerHTML = ''
+
     // Update top bar
     const titleEl = $('top-bar-title')
     if (titleEl) titleEl.textContent = PAGE_TITLES[page] || page
@@ -399,12 +403,14 @@ const Pages = {}
 Pages.dashboard = {
   _panel: null, // which panel is open
 
+  _getPanel() { return $('hub-panel-root') ? $('hub-panel-root').querySelector('.hub-panel') : null },
+
   _open(key) {
     this._panel = key
     this._expanded = false
     this.render()
     requestAnimationFrame(() => {
-      const p = document.querySelector('.hub-panel')
+      const p = this._getPanel()
       if (p) {
         p.classList.add('hub-panel-visible')
         this._initDrag(p)
@@ -413,18 +419,18 @@ Pages.dashboard = {
   },
 
   _close() {
-    const p = document.querySelector('.hub-panel')
+    const p = this._getPanel()
     if (p) {
       p.classList.remove('hub-panel-visible')
       p.classList.remove('hub-panel-expanded')
-      setTimeout(() => { this._panel = null; this._expanded = false; this.render() }, 200)
+      setTimeout(() => { this._panel = null; this._expanded = false; this.render() }, 250)
     } else {
       this._panel = null; this._expanded = false; this.render()
     }
   },
 
   _expand() {
-    const p = document.querySelector('.hub-panel')
+    const p = this._getPanel()
     if (p) {
       this._expanded = true
       p.classList.add('hub-panel-expanded')
@@ -432,7 +438,7 @@ Pages.dashboard = {
   },
 
   _collapse() {
-    const p = document.querySelector('.hub-panel')
+    const p = this._getPanel()
     if (p) {
       this._expanded = false
       p.classList.remove('hub-panel-expanded')
@@ -659,8 +665,9 @@ Pages.dashboard = {
           ${tilesHTML}
         </div>
       </div>
-      ${panelHTML}
     `
+    // Render panel outside scroll container so position:fixed works on mobile Safari
+    $('hub-panel-root').innerHTML = panelHTML
   }
 }
 

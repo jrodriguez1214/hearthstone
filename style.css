@@ -1359,8 +1359,6 @@ textarea { resize: vertical; min-height: 68px; }
   .hub-tile-count { font-size: 20px; }
   .hub-tile-label { font-size: 11px; }
   .hub-tile-meta { font-size: 10px; }
-  .hub-panel { width: 100%; max-width: 100%; }
-  .hub-panel-head { padding: 16px 18px 14px; }
 
   /* Calendar — mobile */
   .cal-cell { min-height: 52px; padding: 6px 4px 4px; }
