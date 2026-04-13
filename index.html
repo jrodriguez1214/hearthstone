@@ -8,205 +8,67 @@
   <meta name="apple-mobile-web-app-title" content="Hearthstone">
   <title>Hearthstone — Property Manager</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
 <div class="app-shell">
-
-  <!-- Desktop Sidebar (hidden on mobile) -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-mark">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9,22 9,12 15,12 15,22"/>
-        </svg>
-      </div>
-      <div>
-        <div class="logo-text">Hearthstone</div>
-        <span class="logo-sub">Property Manager</span>
-      </div>
-    </div>
-
-    <nav>
-      <div class="nav-section">
-        <div class="nav-label">Overview</div>
-        <button class="nav-item active" data-page="dashboard">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-          </svg>
-          Dashboard
-        </button>
-      </div>
-      <div class="nav-section">
-        <div class="nav-label">Manage</div>
-        <button class="nav-item" data-page="properties">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Top bar — always visible -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <button class="top-bar-back hidden" id="back-btn" onclick="Router.go('dashboard')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="top-bar-brand" onclick="Router.go('dashboard')" style="cursor:pointer">
+        <div class="logo-mark">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
             <polyline points="9,22 9,12 15,12 15,22"/>
           </svg>
-          Properties
-        </button>
-        <button class="nav-item" data-page="tenants">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-          Tenants
-        </button>
-        <button class="nav-item" data-page="payments">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="1" x2="12" y2="23"/>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-          </svg>
-          Payments
-        </button>
+        </div>
+        <span class="top-bar-title" id="top-bar-title">Hearthstone</span>
       </div>
-      <div class="nav-section">
-        <div class="nav-label">Maintenance</div>
-        <button class="nav-item" data-page="outstanding">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
-            <rect x="9" y="3" width="6" height="4" rx="2"/>
-            <path d="m9 12 2 2 4-4"/>
-          </svg>
-          Outstanding Items
-        </button>
-        <button class="nav-item" data-page="repairs">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-          </svg>
-          Repairs
-        </button>
-        <button class="nav-item" data-page="expenses">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14,2 14,8 20,8"/>
-            <line x1="16" y1="13" x2="8" y2="13"/>
-            <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10,9 9,9 8,9"/>
-          </svg>
-          Expenses
-        </button>
-      </div>
-    </nav>
-
-    <div class="sidebar-footer">
-      Hearthstone v1.0<br>All data saved locally
     </div>
-  </aside>
-
-  <!-- Mobile Top Header (hidden on desktop) -->
-  <header class="mobile-header">
-    <div class="mobile-logo">
-      <div class="logo-mark">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9,22 9,12 15,12 15,22"/>
+    <div class="top-bar-right">
+      <button class="top-bar-btn" onclick="Search.open()" aria-label="Search">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-      </div>
-      <span class="mobile-logo-text">Hearthstone</span>
+      </button>
+      <kbd class="top-bar-kbd" onclick="Search.open()">⌘K</kbd>
     </div>
-    <span id="mobile-page-title" class="mobile-page-title">Dashboard</span>
   </header>
 
   <!-- Main content -->
   <div class="content-area">
     <div id="page-root"></div>
   </div>
-
 </div>
 
-<!-- More Tray (mobile only) -->
-<div id="more-tray" class="more-tray hidden">
-  <div class="more-tray-backdrop" onclick="MoreTray.close()"></div>
-  <div class="more-tray-menu">
-    <div class="more-tray-handle"></div>
-    <div class="more-tray-title">More</div>
-    <button class="more-tray-item" data-page="outstanding" onclick="Router.go('outstanding')">
-      <div class="more-tray-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
-          <rect x="9" y="3" width="6" height="4" rx="2"/>
-          <path d="m9 12 2 2 4-4"/>
-        </svg>
-      </div>
-      <div class="more-tray-label">Outstanding Items</div>
-      <svg class="more-tray-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
-    <button class="more-tray-item" data-page="repairs" onclick="Router.go('repairs')">
-      <div class="more-tray-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-        </svg>
-      </div>
-      <div class="more-tray-label">Repairs</div>
-      <svg class="more-tray-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
-    <button class="more-tray-item" data-page="expenses" onclick="Router.go('expenses')">
-      <div class="more-tray-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14,2 14,8 20,8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-      </div>
-      <div class="more-tray-label">Expenses</div>
-      <svg class="more-tray-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
+<!-- Global Search Overlay -->
+<div id="search-overlay" class="search-overlay hidden">
+  <div class="search-backdrop" onclick="Search.close()"></div>
+  <div class="search-dialog">
+    <div class="search-input-wrap">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="search-input" type="text" placeholder="Search properties, tenants, payments…" autocomplete="off" spellcheck="false">
+      <kbd class="search-esc">esc</kbd>
+    </div>
+    <div id="search-results" class="search-results"></div>
   </div>
 </div>
 
-<!-- Mobile Bottom Nav (hidden on desktop) -->
-<nav class="bottom-nav">
-  <button class="tab-item active" data-page="dashboard" onclick="Router.go('dashboard')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-    </svg>
-    <span>Home</span>
-  </button>
-  <button class="tab-item" data-page="properties" onclick="Router.go('properties')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-      <polyline points="9,22 9,12 15,12 15,22"/>
-    </svg>
-    <span>Properties</span>
-  </button>
-  <button class="tab-item" data-page="tenants" onclick="Router.go('tenants')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-    <span>Tenants</span>
-  </button>
-  <button class="tab-item" data-page="payments" onclick="Router.go('payments')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="1" x2="12" y2="23"/>
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-    </svg>
-    <span>Payments</span>
-  </button>
-  <button class="tab-item" id="more-tab" onclick="MoreTray.toggle()">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
-    </svg>
-    <span>More</span>
-  </button>
-</nav>
-
-<!-- Modal -->
-<div id="modal-overlay" class="modal-overlay hidden">
-  <div class="modal">
-    <div class="modal-head">
-      <h3 id="modal-title"></h3>
-      <button class="modal-close" onclick="Modal.close()">&#x2715;</button>
+<!-- Slide-in Panel (replaces modal for forms/details) -->
+<div id="panel-overlay" class="panel-overlay hidden">
+  <div class="panel-backdrop" onclick="Panel.close()"></div>
+  <div class="panel-drawer" id="panel-drawer">
+    <div class="panel-drawer-head">
+      <h3 id="panel-title"></h3>
+      <button class="panel-drawer-close" onclick="Panel.close()">&#x2715;</button>
     </div>
-    <div class="modal-body" id="modal-body"></div>
+    <div class="panel-drawer-body" id="panel-body"></div>
   </div>
 </div>
 
