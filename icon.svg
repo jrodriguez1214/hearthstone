@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#FAF5F0"/>
+  
+  <!-- House body -->
+  <rect x="108" y="230" width="296" height="210" rx="12" fill="none" stroke="#8B5E3C" stroke-width="32" stroke-linejoin="round"/>
+  
+  <!-- Roof -->
+  <polyline points="76,248 256,108 436,248" fill="none" stroke="#8B5E3C" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Heart outer -->
+  <path d="M256,370 
+    C256,370 176,310 176,272 
+    C176,248 196,232 220,232 
+    C236,232 250,242 256,254 
+    C262,242 276,232 292,232 
+    C316,232 336,248 336,272 
+    C336,310 256,370 256,370Z" 
+    fill="#D4845A"/>
+  
+  <!-- Heart inner (lighter) -->
+  <path d="M256,348 
+    C256,348 200,304 200,278 
+    C200,262 212,252 228,252 
+    C240,252 250,258 256,268 
+    C262,258 272,252 284,252 
+    C300,252 312,262 312,278 
+    C312,304 256,348 256,348Z" 
+    fill="#F2C894"/>
+</svg>
