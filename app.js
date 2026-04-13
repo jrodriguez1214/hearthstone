@@ -445,71 +445,98 @@ Pages.dashboard = {
     }
   },
 
-  // Touch drag on the handle area to expand/collapse/dismiss
+  // Touch drag on the handle/header to expand/collapse/dismiss
   _initDrag(panel) {
-    let startY = 0, currentY = 0, dragging = false
-    const handle = panel // drag anywhere on the header area
+    const self = this
+    let startY = 0
+    let lastY = 0
+    let dragging = false
+    let panelStartH = 0
 
-    const onStart = (e) => {
-      // Only drag from the top 60px (handle + header area)
-      const touch = e.touches ? e.touches[0] : e
-      const rect = panel.getBoundingClientRect()
-      if (touch.clientY - rect.top > 60) return
-      startY = touch.clientY
-      currentY = startY
+    // The drag handle zone = the ::before pseudo + header (first ~70px)
+    const headEl = panel.querySelector('.hub-panel-head')
+
+    function getTouch(e) {
+      return e.touches ? e.touches[0] : e
+    }
+
+    function onTouchStart(e) {
+      const t = getTouch(e)
+      startY = t.clientY
+      lastY = startY
       dragging = true
+      panelStartH = panel.getBoundingClientRect().height
       panel.style.transition = 'none'
     }
 
-    const onMove = (e) => {
+    function onTouchMove(e) {
       if (!dragging) return
-      const touch = e.touches ? e.touches[0] : e
-      currentY = touch.clientY
-      const dy = currentY - startY
+      const t = getTouch(e)
+      lastY = t.clientY
+      const dy = lastY - startY
 
-      if (this._expanded) {
-        // When expanded, only allow dragging down
+      // Translate the panel — positive = moving down, negative = moving up
+      if (self._expanded) {
+        // From expanded: only allow pulling down
         if (dy > 0) {
           panel.style.transform = `translateY(${dy}px)`
         }
       } else {
-        // When collapsed, allow dragging up (expand) or down (dismiss)
-        panel.style.transform = `translateY(${dy}px)`
+        // From peek: allow pulling up (negative dy) or down (positive dy)
+        // Clamp upward pull so panel doesn't go above viewport
+        const clampedDy = Math.max(dy, -(window.innerHeight - panelStartH))
+        panel.style.transform = `translateY(${clampedDy}px)`
       }
     }
 
-    const onEnd = () => {
+    function onTouchEnd() {
       if (!dragging) return
       dragging = false
+      const dy = lastY - startY
+
+      // Reset inline styles — let CSS classes handle the position
       panel.style.transition = ''
       panel.style.transform = ''
-      const dy = currentY - startY
 
-      if (this._expanded) {
-        // Dragging down from expanded
-        if (dy > 100) {
-          this._collapse() // collapse back to peek
-        } else if (dy > 200) {
-          this._close() // dismiss
+      if (self._expanded) {
+        if (dy > 150) {
+          self._close()
+        } else if (dy > 60) {
+          self._collapse()
         }
+        // else snap back to expanded (CSS handles it)
       } else {
-        // Dragging up from peek → expand
-        if (dy < -60) {
-          this._expand()
+        if (dy < -50) {
+          self._expand()
+        } else if (dy > 60) {
+          self._close()
         }
-        // Dragging down from peek → dismiss
-        else if (dy > 80) {
-          this._close()
-        }
+        // else snap back to peek (CSS handles it)
       }
     }
 
-    panel.addEventListener('touchstart', onStart, { passive: true })
-    panel.addEventListener('touchmove', onMove, { passive: true })
-    panel.addEventListener('touchend', onEnd)
-    panel.addEventListener('mousedown', onStart)
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onEnd)
+    // Bind to the header area only (not the scrollable body)
+    if (headEl) {
+      headEl.addEventListener('touchstart', onTouchStart, { passive: true })
+      headEl.addEventListener('touchmove', onTouchMove, { passive: false })
+      headEl.addEventListener('touchend', onTouchEnd, { passive: true })
+    }
+    // Also bind to the drag handle (the ::before pseudo — use the panel top area)
+    panel.addEventListener('touchstart', function(e) {
+      const t = getTouch(e)
+      const rect = panel.getBoundingClientRect()
+      // Only activate if touching the top 20px (the handle bar area)
+      if (t.clientY - rect.top <= 20) {
+        onTouchStart(e)
+      }
+    }, { passive: true })
+    panel.addEventListener('touchmove', function(e) {
+      if (dragging) {
+        e.preventDefault() // prevent scroll while dragging
+        onTouchMove(e)
+      }
+    }, { passive: false })
+    panel.addEventListener('touchend', onTouchEnd, { passive: true })
   },
 
   render() {
