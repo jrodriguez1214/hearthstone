@@ -401,11 +401,14 @@ Pages.dashboard = {
 
   _open(key) {
     this._panel = key
+    this._expanded = false
     this.render()
-    // Animate panel in after DOM paint
     requestAnimationFrame(() => {
       const p = document.querySelector('.hub-panel')
-      if (p) p.classList.add('hub-panel-visible')
+      if (p) {
+        p.classList.add('hub-panel-visible')
+        this._initDrag(p)
+      }
     })
   },
 
@@ -413,10 +416,94 @@ Pages.dashboard = {
     const p = document.querySelector('.hub-panel')
     if (p) {
       p.classList.remove('hub-panel-visible')
-      setTimeout(() => { this._panel = null; this.render() }, 200)
+      p.classList.remove('hub-panel-expanded')
+      setTimeout(() => { this._panel = null; this._expanded = false; this.render() }, 200)
     } else {
-      this._panel = null; this.render()
+      this._panel = null; this._expanded = false; this.render()
     }
+  },
+
+  _expand() {
+    const p = document.querySelector('.hub-panel')
+    if (p) {
+      this._expanded = true
+      p.classList.add('hub-panel-expanded')
+    }
+  },
+
+  _collapse() {
+    const p = document.querySelector('.hub-panel')
+    if (p) {
+      this._expanded = false
+      p.classList.remove('hub-panel-expanded')
+    }
+  },
+
+  // Touch drag on the handle area to expand/collapse/dismiss
+  _initDrag(panel) {
+    let startY = 0, currentY = 0, dragging = false
+    const handle = panel // drag anywhere on the header area
+
+    const onStart = (e) => {
+      // Only drag from the top 60px (handle + header area)
+      const touch = e.touches ? e.touches[0] : e
+      const rect = panel.getBoundingClientRect()
+      if (touch.clientY - rect.top > 60) return
+      startY = touch.clientY
+      currentY = startY
+      dragging = true
+      panel.style.transition = 'none'
+    }
+
+    const onMove = (e) => {
+      if (!dragging) return
+      const touch = e.touches ? e.touches[0] : e
+      currentY = touch.clientY
+      const dy = currentY - startY
+
+      if (this._expanded) {
+        // When expanded, only allow dragging down
+        if (dy > 0) {
+          panel.style.transform = `translateY(${dy}px)`
+        }
+      } else {
+        // When collapsed, allow dragging up (expand) or down (dismiss)
+        panel.style.transform = `translateY(${dy}px)`
+      }
+    }
+
+    const onEnd = () => {
+      if (!dragging) return
+      dragging = false
+      panel.style.transition = ''
+      panel.style.transform = ''
+      const dy = currentY - startY
+
+      if (this._expanded) {
+        // Dragging down from expanded
+        if (dy > 100) {
+          this._collapse() // collapse back to peek
+        } else if (dy > 200) {
+          this._close() // dismiss
+        }
+      } else {
+        // Dragging up from peek → expand
+        if (dy < -60) {
+          this._expand()
+        }
+        // Dragging down from peek → dismiss
+        else if (dy > 80) {
+          this._close()
+        }
+      }
+    }
+
+    panel.addEventListener('touchstart', onStart, { passive: true })
+    panel.addEventListener('touchmove', onMove, { passive: true })
+    panel.addEventListener('touchend', onEnd)
+    panel.addEventListener('mousedown', onStart)
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onEnd)
   },
 
   render() {
@@ -462,7 +549,17 @@ Pages.dashboard = {
     let upcomingCount = 0
     upcomingDates.forEach(d => { upcomingCount += combinedEvents[d].length })
 
-    // Detail content builders
+    // Action row helper — swipeable row with edit/delete
+    const actRow = (content, editFn, delFn) => `
+      <div class="panel-row panel-row-actions">
+        <div class="panel-row-content">${content}</div>
+        <div class="panel-row-btns">
+          <button class="panel-act-btn panel-act-edit" onclick="event.stopPropagation();${editFn}">Edit</button>
+          <button class="panel-act-btn panel-act-del" onclick="event.stopPropagation();${delFn}">Delete</button>
+        </div>
+      </div>`
+
+    // Detail content builders — with inline actions
     const calDetail = upcomingDates.length ? upcomingDates.map(dateStr => {
       const dayLabel = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
       return combinedEvents[dateStr].map(e => `<div class="panel-row"><div><div class="panel-row-label">${e.label}</div><div class="panel-row-sub">${dayLabel} · ${e.sub}</div></div><span class="cal-dot ${e.color}" style="width:10px;height:10px"></span></div>`).join('')
@@ -470,16 +567,29 @@ Pages.dashboard = {
 
     const propDetail = props.length ? props.map(p => {
       const tenant = allTenants.find(t => t.propertyId === p.id && t.status === 'active')
-      return `<div class="panel-row"><div><div class="panel-row-label">${esc(p.name)}</div><div class="panel-row-sub">${tenant ? tenant.firstName + ' ' + tenant.lastName : 'No tenant'}</div></div><div style="text-align:right">${badge(p.status)}<div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">${fmt.currency(p.monthlyRent)}/mo</div></div></div>`
+      const content = `<div><div class="panel-row-label">${esc(p.name)}</div><div class="panel-row-sub">${tenant ? tenant.firstName + ' ' + tenant.lastName : 'No tenant'}</div></div><div style="text-align:right">${badge(p.status)}<div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">${fmt.currency(p.monthlyRent)}/mo</div></div>`
+      return actRow(content, `Pages.dashboard._close();Pages.properties.edit('${p.id}')`, `Pages.dashboard._close();Pages.properties.del('${p.id}')`)
     }).join('') : `<div class="panel-empty">No properties yet.</div>`
 
-    const tenantDetail = tenants.length ? tenants.map(t => `<div class="panel-row"><div><div class="panel-row-label">${esc(t.firstName)} ${esc(t.lastName)}</div><div class="panel-row-sub">${propName(t.propertyId)} · ${esc(t.email)}</div></div><div style="text-align:right">${badge(t.status)}<div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">${fmt.currency(t.rentAmount)}/mo</div></div></div>`).join('') : `<div class="panel-empty">No active tenants.</div>`
+    const tenantDetail = tenants.length ? tenants.map(t => {
+      const content = `<div><div class="panel-row-label">${esc(t.firstName)} ${esc(t.lastName)}</div><div class="panel-row-sub">${propName(t.propertyId)} · ${esc(t.email)}</div></div><div style="text-align:right">${badge(t.status)}<div style="font-size:11.5px;color:var(--text-muted);margin-top:3px">${fmt.currency(t.rentAmount)}/mo</div></div>`
+      return actRow(content, `Pages.dashboard._close();Pages.tenants.edit('${t.id}')`, `Pages.dashboard._close();Pages.tenants.del('${t.id}')`)
+    }).join('') : `<div class="panel-empty">No active tenants.</div>`
 
-    const payDetail = recentPmts.length ? recentPmts.map(p => `<div class="panel-row"><div><div class="panel-row-label">${tenantName(p.tenantId)}</div><div class="panel-row-sub">${propName(p.propertyId)} · ${fmt.monthLabel(p.month)}</div></div><div style="text-align:right"><div style="font-weight:600;font-size:13px">${fmt.currency(p.amount)}</div><div style="margin-top:3px">${badge(p.status)}</div></div></div>`).join('') : `<div class="panel-empty">No payments recorded.</div>`
+    const payDetail = recentPmts.length ? recentPmts.map(p => {
+      const content = `<div><div class="panel-row-label">${tenantName(p.tenantId)}</div><div class="panel-row-sub">${propName(p.propertyId)} · ${fmt.monthLabel(p.month)}</div></div><div style="text-align:right"><div style="font-weight:600;font-size:13px">${fmt.currency(p.amount)}</div><div style="margin-top:3px">${badge(p.status)}</div></div>`
+      return actRow(content, `Pages.dashboard._close();Pages.payments.edit('${p.id}')`, `Pages.dashboard._close();Pages.payments.del('${p.id}')`)
+    }).join('') : `<div class="panel-empty">No payments recorded.</div>`
 
-    const repairDetail = activeRep.length ? activeRep.map(r => `<div class="panel-row"><div><div class="panel-row-label">${esc(r.title)}</div><div class="panel-row-sub">${propName(r.propertyId)}</div></div>${badge(r.status)}</div>`).join('') : `<div class="panel-empty">No active repairs.</div>`
+    const repairDetail = activeRep.length ? activeRep.map(r => {
+      const content = `<div><div class="panel-row-label">${esc(r.title)}</div><div class="panel-row-sub">${propName(r.propertyId)}</div></div>${badge(r.status)}`
+      return actRow(content, `Pages.dashboard._close();Pages.repairs.edit('${r.id}')`, `Pages.dashboard._close();Pages.repairs.del('${r.id}')`)
+    }).join('') : `<div class="panel-empty">No active repairs.</div>`
 
-    const itemDetail = open.length ? open.slice(0, 6).map(o => `<div class="panel-row"><div><div class="panel-row-label">${esc(o.title)}</div><div class="panel-row-sub">${propName(o.propertyId)}</div></div><div style="text-align:right">${priorityBadge(o.priority)}<div style="margin-top:3px">${badge(o.status)}</div></div></div>`).join('') : `<div class="panel-empty">No open items — great work!</div>`
+    const itemDetail = open.length ? open.slice(0, 6).map(o => {
+      const content = `<div><div class="panel-row-label">${esc(o.title)}</div><div class="panel-row-sub">${propName(o.propertyId)}</div></div><div style="text-align:right">${priorityBadge(o.priority)}<div style="margin-top:3px">${badge(o.status)}</div></div>`
+      return actRow(content, `Pages.dashboard._close();Pages.outstanding.edit('${o.id}')`, `Pages.dashboard._close();Pages.outstanding.del('${o.id}')`)
+    }).join('') : `<div class="panel-empty">No open items — great work!</div>`
 
     // Tile config
     const tiles = [
@@ -506,6 +616,16 @@ Pages.dashboard = {
       </button>
     `).join('')
 
+    // Add button config per tile
+    const addMap = {
+      properties: `Pages.dashboard._close();Pages.properties.add()`,
+      tenants:    `Pages.dashboard._close();Pages.tenants.add()`,
+      money:      `Pages.dashboard._close();Pages.payments.add()`,
+      repairs:    `Pages.dashboard._close();Pages.repairs.add()`,
+      items:      `Pages.dashboard._close();Pages.outstanding.add()`,
+      cal:        `Pages.dashboard._close();Pages.calendar.addEvent()`,
+    }
+
     const panelHTML = panel && activeTile ? `
       <div class="hub-panel-backdrop" onclick="Pages.dashboard._close()"></div>
       <div class="hub-panel">
@@ -514,13 +634,21 @@ Pages.dashboard = {
             <div class="hub-panel-title">${activeTile.label}</div>
             <div class="hub-panel-subtitle">${activeTile.count} · ${activeTile.meta}</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn btn-secondary btn-sm" onclick="Router.go('${pageMap[panel] || panel}')">View all</button>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();${addMap[panel]}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add
+            </button>
             <button class="hub-panel-close" onclick="Pages.dashboard._close()">&#x2715;</button>
           </div>
         </div>
         <div class="hub-panel-body">
           ${activeTile.detail}
+        </div>
+        <div class="hub-panel-footer">
+          <button class="btn btn-secondary btn-sm" onclick="Router.go('${pageMap[panel] || panel}')" style="width:100%">
+            View all ${activeTile.label.toLowerCase()}
+          </button>
         </div>
       </div>
     ` : ''
